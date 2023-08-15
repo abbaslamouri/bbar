@@ -1,0 +1,97 @@
+@use 'sass:math';
+@use 'variables' as *;
+
+// $type-scales: (
+//   minor-second: 1.067,
+//   major-second: 1.125,
+//   minor-third: 1.2,
+//   major-third: 1.25,
+//   perfect-fourth: 1.333,
+//   augmented-fourth: 1.414,
+//   perfect-fifth: 1.5,
+//   golden-ratio: 1.618,
+//   major-sixth: 1.667,
+//   minor-seventh: 1.778,
+//   major-seventh: 1.875,
+//   octave: 2,
+// );
+
+// $font-base-size: 1rem;
+// $font-min-size: 16;
+// $font-max-size: 20;
+
+// $type-scale-sm: map-get(
+//   $map: $type-scales,
+//   $key: minor-third,
+// );
+// $type-scale-lg: map-get(
+//   $map: $type-scales,
+//   $key: major-third,
+// );
+// $font-sizes: (-3, -2, -1, 0, 1, 2, 3, 4, 5, 6);
+// $font-weights: (
+//   light: 300,
+//   regular: 400,
+//   semibold: 600,
+//   bold: 700,
+//   extrabold: 800,
+// );
+
+// $tracking: (
+//   '-3': -0.025ch,
+//   '-2': -0.05ch,
+//   '-1': -0.075ch,
+//   '0': 0,
+//   '1': 0.05ch,
+//   '2': 0.075ch,
+//   '3': 0.1ch,
+//   '4': 0.15ch,
+//   '5': 0.2ch,
+//   '6': 0.25ch,
+//   '7': 0.3ch,
+//   '8': 0.4ch,
+//   '9': 0.5ch,
+// );
+
+// Font size curve slope
+@function get-slope($step, $multiplier-sm, $multiplier-lg) {
+  $slope: 100 *
+    math.div($font-max-size * $multiplier-lg - $font-min-size * $multiplier-sm, $fluid-max-width - $fluid-min-width) *
+    1vw;
+  @return $slope;
+}
+
+// Font size curve inrecept
+@function get-intercept($step, $multiplier-sm, $multiplier-lg) {
+  $intercept: (
+      math.div(
+        $font-min-size * $fluid-max-width * $multiplier-sm - $font-max-size * $fluid-min-width * $multiplier-lg,
+        $fluid-max-width - $fluid-min-width
+      )
+    ) * math.div(1, 16) * $font-base-size;
+  @return $intercept;
+}
+
+:root {
+  --font-sans: 'proxima-nova', sans-serif;
+  // --font-serif: 'proxima-sera', serif;
+
+  @each $step in $font-sizes {
+    --font-size-#{$step}: clamp(
+      #{$font-min-size * math.pow($type-scale-sm, $step) * math.div(1, 16) * $font-base-size},
+      calc(
+        #{get-slope($step, math.pow($type-scale-sm, $step), math.pow($type-scale-lg, $step))} +
+          #{get-intercept($step, math.pow($type-scale-sm, $step), math.pow($type-scale-lg, $step))}
+      ),
+      #{$font-max-size * math.pow($type-scale-lg, $step) * math.div(1, 16) * $font-base-size}
+    );
+  }
+
+  @each $weight, $value in $font-weights {
+    --font-#{$weight}: #{$value};
+  }
+
+  @each $key, $value in $tracking {
+    --tracking-#{$key}: #{$value};
+  }
+}

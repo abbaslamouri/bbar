@@ -1,0 +1,40 @@
+@use 'sass:math';
+@use 'sass:map';
+@use 'variables' as *;
+
+:root {
+  --fluid-max-width: #{$fluid-max-width * math.div(1, 16) * 1rem};
+
+  @each $step, $range in map.merge($size-base-steps, $size-extended-steps) {
+    --size-#{$step}: clamp(
+      #{map-get($map: $range, $key: min) * $font-min-size * math.div(1, 16) * $font-base-size},
+      calc(
+        #{100 *
+          (
+            math.div(
+              $font-max-size * map-get($map: $range, $key: max) - $font-min-size * map-get($map: $range, $key: min),
+              $fluid-max-width - $fluid-min-width
+            )
+          ) *
+          1vw} +
+          #{math.div(
+            $font-min-size *
+              $fluid-max-width *
+              map-get($map: $range, $key: min) -
+              $font-max-size *
+              $fluid-min-width *
+              map-get($map: $range, $key: max),
+            $fluid-max-width - $fluid-min-width
+          ) *
+          math.div(1, 16) *
+          $font-base-size}
+      ),
+      #{map-get($map: $range, $key: max) * $font-max-size * math.div(1, 16) * $font-base-size}
+    );
+  }
+
+  // --gutter: var(--size-s-m);
+
+  // --nav-breakpoint: 999; // px
+  // --hero-top-padding: 6rem;
+}

@@ -1,0 +1,11 @@
+@use 'sass:math';
+@use 'variables' as *;
+
+:root {
+  @each $size, $value in $size-steps {
+    // @debug #{index($size-steps, $value)};
+    // @debug #{$size};
+    // --size-#{index($size, $value)}: #{$value};
+    --size-#{$size}: #{$value};
+  }
+}

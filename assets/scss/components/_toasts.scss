@@ -1,0 +1,96 @@
+.toasts {
+  position: fixed;
+  // border: 20px solid blue;
+  // bottom: 0;
+  // right: 0;
+  z-index: 999;
+  max-width: var(--size-14xl);
+  margin-block-start: var(--size-4xl);
+  margin-inline-end: var(--size-3xl);
+  margin: var(--size-xl);
+
+  &[data-position^='top'] {
+    top: 0;
+  }
+
+  &[data-position^='bottom'] {
+    bottom: 0;
+  }
+
+  &[data-position$='left'] {
+    left: 0;
+  }
+
+  &[data-position$='right'] {
+    right: 0;
+  }
+
+  &[data-position$='center'] {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  //   border: 1px solid red;
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+
+    li {
+      .toast {
+        border: 1px solid var(--color-neutral-80);
+        background-color: var(--color-neutral-99);
+        padding: var(--size-s);
+        display: flex;
+        align-items: center;
+        gap: var(--size-l);
+        position: relative;
+        border-radius: var(--size-2xs);
+        cursor: pointer;
+
+        // animation: toastIt 3000ms cubic-bezier(0.785, 0.135, 0.15, 0.86) forwards;
+
+        .content {
+          flex: 1;
+          // border: 1px solid blue;
+          margin-inline-end: var(--size-l);
+        }
+
+        .icon {
+          //   border: 1px solid green;
+          width: var(--size-2xl);
+          height: var(--size-2xl);
+
+          &.trailing {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: var(--size-l);
+            height: var(--size-l);
+            margin: var(--size-2xs);
+          }
+        }
+
+        &[data-type='info'] {
+          background-color: var(--color-info-50);
+          color: var(--color-neutral-99);
+        }
+
+        &[data-type='warning'] {
+          background-color: var(--color-warning-50);
+          color: var(--color-neutral-99);
+        }
+
+        &[data-type='error'] {
+          background-color: var(--color-danger-50);
+          color: var(--color-neutral-99);
+        }
+
+        &[data-type='success'] {
+          background-color: var(--color-success-50);
+          color: var(--color-neutral-99);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,153 @@
+export default (url: string = '', token: string = '') => `
+<div class="myLight">
+<div style="color: initial">
+  <div class="jsConTent">
+    <style>
+      div.registration-email-template img {
+        border: 0;
+        height: auto;
+        outline: 0;
+        text-decoration: none;
+      }
+      div.registration-email-template table {
+        border-collapse: collapse;
+      }
+      div.registration-email-template #x_1500852563bodyCell,
+      div.registration-email-template #x_1500852563bodyTable,
+      div.registration-email-template {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: Helvetica, Arial, sans-serif;
+      }
+      div.registration-email-template #x_1500852563bodyCell {
+        padding: 20px;
+      }
+      div.registration-email-template #x_1500852563bodyTable {
+        width: 560px;
+      }
+    </style>
+
+    <div style="background-color: #ffffff" class="registration-email-template">
+      <center>
+        <table
+          style="
+            width: 560px;
+            margin: 0;
+            padding: 0;
+            font-family: Helvetica, Arial, sans-serif;
+            border-collapse: collapse;
+            height: 100%;
+            background-color: #ffffff;
+          "
+          align="center"
+          border="0"
+          cellpadding="0"
+          cellspacing="0"
+          height="100%"
+          width="100%"
+          id="x_1500852563bodyTable"
+        >
+          <tbody>
+            <tr>
+              <td
+                align="center"
+                valign="top"
+                id="x_1500852563bodyCell"
+                style="margin: 0; padding: 0; font-family: Helvetica, Arial, sans-serif; height: 100%"
+              >
+                <div
+                  class="x_1500852563top"
+                  style="background-color: #ffffff; color: #202123; padding: 27px 20px 0 15px"
+                >
+                  <p style="text-align: left; margin: 0">
+                    <img
+                      id="1689858354848100001_imgsrc_url_0"
+                      width="560"
+                      height="168"
+                      alt="OpenAI"
+                      title=""
+                      style="
+                        width: 140px;
+                        height: auto;
+                        border: 0;
+                        line-height: 100%;
+                        outline: none;
+                        text-decoration: none;
+                      "
+                      src="https://morelamplight.s3.us-east-2.amazonaws.com/morelamplight-logo-dark-500x227.webp"
+                    />
+                  </p>
+                </div>
+                <div
+                  class="x_1500852563main"
+                  style="
+                    background-color: #ffffff;
+                    color: #353740;
+                    padding: 40px 20px;
+                    text-align: left;
+                    line-height: 1.5;
+                  "
+                >
+                  <h1 style="color: #202123; font-size: 32px; line-height: 40px; margin: 0 0 20px">
+                    Reset password
+                  </h1>
+
+                  <p style="font-size: 16px; line-height: 24px">
+                    A password change has been requested for your account. If this was you, please use the link below to reset your password.
+                  </p>
+
+                  <p style="margin: 24px 0 0; text-align: left">
+                    <a
+                      href="${url}/auth/reset-password?passwordResetToken=${token}"
+                      style="
+                        display: inline-block;
+                        text-decoration: none;
+                        background: #DDB82D;
+                        border-radius: 3px;
+                        color: white;
+                        font-family: Helvetica, sans-serif;
+                        font-size: 16px;
+                        line-height: 24px;
+                        font-weight: 400;
+                        padding: 12px 20px 11px;
+                        margin: 0px;
+                      "
+                      target="_blank"
+                    >
+                      Reset password
+                    </a>
+                  </p>
+                </div>
+                <div
+                  class="x_1500852563footer"
+                  style="
+                    text-align: left;
+                    background: #ffffff;
+                    color: #6e6e80;
+                    padding: 0 20px 20px;
+                    font-size: 13px;
+                    line-height: 1.4;
+                  "
+                >
+                  <p style="margin: 0">
+                    This link will expire in 5 days. If you did not make this request, please disregard this email.
+                    For help, contact us through our
+                    <a
+                      href="${url}/contact"
+                      target="_blank"
+                      >Help center</a
+                    >.
+                  </p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </center>
+    </div>
+    <div style="clear: both"></div>
+  </div>
+</div>
+<!---->
+</div>`

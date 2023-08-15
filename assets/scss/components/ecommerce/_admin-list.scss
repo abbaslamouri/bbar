@@ -1,0 +1,113 @@
+.admin-ecommerce-listxx {
+  flex: 1;
+  display: flex;
+
+  .container {
+    .list-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      .content {
+        // border: 3px solid green;
+        flex: 1;
+        display: flex;
+        // flex-direction: column;
+        // justify-content: ;
+
+        .table-pagination {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          // border: 3px solid pink;
+
+          .pagination {
+            align-self: flex-end;
+            // border: 1px solid red;
+          }
+        }
+
+        .no-items {
+          flex: 1;
+          font-size: var(--font-size-1);
+          text-align: center;
+          margin-block-start: var(--size-5xl);
+          // border: 1px solid red;
+        }
+      }
+
+      &.breakpoint-1 {
+        .filters-wrapper {
+          flex-direction: column;
+          gap: var(--space-xs);
+        }
+
+        table {
+          th {
+            display: none;
+          }
+
+          td {
+            display: grid;
+            grid-template-columns: 20ch auto;
+            // border: 1px solid red;
+
+            &:first-child {
+              padding-block-start: var(--size-3xl);
+            }
+            &:last-child {
+              padding-block-end: var(--size-3xl);
+              text-align: start;
+            }
+
+            &[data-cell='true'] {
+              &::before {
+                content: attr(data-name);
+                font-weight: var(--font-bold);
+                text-transform: capitalize;
+                font-size: var(--font-size-1);
+              }
+            }
+
+            &.image-title {
+              gap: 0;
+            }
+
+            .title {
+              font-size: var(--font-size-2);
+            }
+          }
+        }
+      }
+
+      &.breakpoint-2 {
+        .filters-wrapper {
+          .sort-per-page {
+            flex-direction: column;
+            gap: var(--space-xs);
+          }
+        }
+      }
+    }
+  }
+}
+
+.products-list-filters {
+  &-enter-active,
+  &-leave-active {
+    transition: all 500ms ease-in-out;
+  }
+
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
+    transform: translateY(-5rem);
+  }
+
+  &-enter-to,
+  &-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,18 @@
+@use 'sass:map';
+@use 'variables' as *;
+
+:root {
+  // Colors
+  @each $hue, $value in $colorsHues {
+    @each $shade, $sl in $colorsSL {
+      --color-#{$hue}-#{$shade}: #{hsl($value, map-get($map: $sl, $key: s) * 1%, map-get($map: $sl, $key: l) * 1%)};
+    }
+  }
+
+  // Neutrals
+  @each $hue, $value in $neutralsHues {
+    @each $shade, $sl in $neutralSL {
+      --color-#{$hue}-#{$shade}: #{hsl($value, map-get($map: $sl, $key: s) * 1%, map-get($map: $sl, $key: l) * 1%)};
+    }
+  }
+}

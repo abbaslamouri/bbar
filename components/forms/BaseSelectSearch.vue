@@ -1,0 +1,366 @@
+<script lang="ts" setup>
+import debounce from 'lodash.debounce'
+import uniqueId from '~/server/utils/uniqueId'
+
+interface SelectOptions {
+  text: string
+  value: string
+}
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: '',
+  },
+  label: {
+    type: String,
+    default: '',
+  },
+  selectOptions: {
+    type: Array,
+    required: false,
+    default: () => [],
+  },
+})
+
+const emit = defineEmits(['updateList', 'update:modelValue'])
+
+const uuid = uniqueId().getId()
+const inputRef = ref()
+const liRefs = ref<Array<HTMLElement>>([])
+const queryText = ref(props.modelValue)
+const selectedOption = ref<SelectOptions>({} as SelectOptions)
+const isLoading = ref(false)
+const isOpen = ref(false)
+const arrowCounter = ref(-1)
+const activedescendant = ref('')
+const selectRef = ref()
+
+const filteredOptions = computed(() => {
+  return (props.selectOptions as Array<SelectOptions>).filter((option: SelectOptions) =>
+    option.text?.toLowerCase().includes(queryText.value?.toLowerCase())
+  )
+})
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+const onArrowDown = (event: Event) => {
+  if (isOpen.value) {
+    if (arrowCounter.value < filteredOptions.value.length - 1) {
+      arrowCounter.value = arrowCounter.value + 1
+      activedescendant.value = arrowCounter.value.toString()
+      selectedOption.value = { ...(filteredOptions.value as Array<SelectOptions>)[arrowCounter.value] }
+      // console.log(liRefs.value[arrowCounter.value])
+      // const element = (event.target as HTMLElement)
+      //   ?.closest('.select')
+      //   ?.querySelector(`#result-item-${arrowCounter.value}`)
+      // console.log(element)
+      // console.log(arrowCounter.value)
+      // element?.scrollIntoView()
+      // liRefs.value[arrowCounter.value].scrollIntoView()
+      liRefs.value[arrowCounter.value].scrollIntoView({ behavior: 'smooth', block: 'end' })
+      // console.log(liRefs.value[arrowCounter.value].getBoundingClientRect())
+
+      // console.log(window.getComputedStyle(liRefs.value[arrowCounter.value]).position)
+      // liRefs.value[arrowCounter.value].scrollIntoView()
+    }
+  }
+}
+const onArrowUp = (event: Event) => {
+  if (isOpen.value) {
+    if (arrowCounter.value >= 0) {
+      arrowCounter.value = arrowCounter.value - 1
+      if (arrowCounter.value < 0) {
+        activedescendant.value = ''
+        selectedOption.value = { value: '', text: '' }
+      } else {
+        activedescendant.value = arrowCounter.value.toString()
+        selectedOption.value = { ...(filteredOptions.value as Array<SelectOptions>)[arrowCounter.value] }
+        // const element = (event.target as HTMLElement)
+        //   ?.closest('.select')
+        //   ?.querySelector(`#result-item-${arrowCounter.value}`)
+        // console.log(element)
+        liRefs.value[arrowCounter.value].scrollIntoView({ behavior: 'smooth', block: 'end' })
+      }
+    }
+  }
+}
+const onEnter = (event: Event) => {
+  if (selectedOption.value) {
+    setValue(selectedOption.value)
+  } else {
+    console.log((event.target as HTMLInputElement)?.value)
+    queryText.value = (event.target as HTMLInputElement)?.value
+    isLoading.value = true
+    updateList()
+  }
+}
+
+const setValue = (option: SelectOptions) => {
+  queryText.value = option.text
+  isOpen.value = false
+  // arrowCounter.value = -1
+  inputRef.value.blur()
+  selectedOption.value = option
+  emit('update:modelValue', option.value)
+}
+const toggleListVisibility = () => {
+  if (isOpen.value) {
+    isOpen.value = false
+    inputRef.value.blur()
+  } else inputRef.value.focus()
+}
+
+const handleClickOutside = (event: Event) => {
+  if (!selectRef.value.contains(event.target)) {
+    isOpen.value = false
+    arrowCounter.value = -1
+  }
+}
+
+const updateList = debounce(async () => {
+  liRefs.value = liRefs.value.filter((el: HTMLElement) => el !== null)
+  // const regex = new RegExp('^[a-zA-Z0-9 ]*$')
+  // if (!regex.test(searchText.value)) searchText.value = ''
+  // emit('updateSearchText', searchText.value)
+  isLoading.value = false
+}, 500)
+
+// const updateList = () => {
+//   // const regex = new RegExp('^[a-zA-Z0-9 ]*$')
+//   // if (!regex.test(queryText.value)) queryText.value = ''
+//   emit('updateList', queryText.value)
+// }
+const onChange = (event: Event) => {
+  console.log((event.target as HTMLInputElement)?.value)
+  queryText.value = (event.target as HTMLInputElement)?.value
+  isLoading.value = true
+  updateList()
+}
+
+// watch(queryText, (newVal, oldVal) => {
+//   isLoading.value = true
+//   updateList()
+// })
+</script>
+
+<script lang="ts">
+export default {
+  inheritAttrs: false,
+}
+</script>
+
+<template>
+  <div class="field-group select | flow-2xs" :class="{ 'no-label': !label }" ref="selectRef">
+    <div class="filter">
+      <label :for="`select-${uuid}`" v-if="label">
+        {{ label }}
+        <span v-if="$attrs.required !== undefined">(required)</span>
+      </label>
+      <!-- <div class="input-icons"> -->
+      <!-- <div class="inner"> -->
+      <input
+        type="text"
+        :id="`select-${uuid}`"
+        :value="queryText"
+        :placeholder="($attrs.placeholder as string)"
+        aria-describedby="select-instructions"
+        aria-owns="select-results"
+        :aria-expanded="isOpen"
+        autocomplete="off"
+        role="combobox"
+        aria-haspopup="listbox"
+        ref="inputRef"
+        @focus="isOpen = true"
+        @change="onChange"
+        @input="onChange"
+        @keyup.enter="onEnter"
+        @keydown.esc="isOpen = false"
+        @keyup.down="onArrowDown"
+        @keyup.up="onArrowUp"
+      />
+      <button type="button" tabindex="-1" @click="toggleListVisibility">
+        <Icon class="icon" name="ri:arrow-down-s-line" aria-hidden="true" focusable="false" />
+        <span class="visually-hidden">Toggle search list</span>
+      </button>
+      <!-- </div> -->
+      <!-- <button type="button" class="search" @click="updateList">
+          <Icon name="ri:search-line" aria-hidden="true" focusable="false" />
+          <span class="visually-hidden">Search</span>
+        </button> -->
+      <!-- </div> -->
+    </div>
+    <ul
+      class="select-results | flow-2xs"
+      id="select-results"
+      role="listbox"
+      :tabindex="isOpen ? -1 : 0"
+      v-show="isOpen"
+    >
+      <li class="loading" v-if="isLoading">Loading results...</li>
+      <template v-else>
+        <li
+          class="select-result"
+          :class="{ active: selectedOption.value === option.value }"
+          :id="`result-item-${index}`"
+          v-for="(option, index) in (filteredOptions as Array<SelectOptions>)"
+          :key="`option-${index}`"
+          role="option"
+          tabindex="0"
+          :aria-selected="index === arrowCounter"
+          :ref="(el:any) => (liRefs[index] = el)"
+          @click="setValue(option)"
+        >
+          <span
+            v-html="
+              `<b>${option.text.replace(queryText, `<span style='font-weight: normal;'>${queryText}</span>`)}</b>`
+            "
+          ></span>
+          <!-- {{ liRefs[index] }} -->
+        </li>
+      </template>
+    </ul>
+    <div class="visually-hidden" id="select-instructions" aria-live="assertive">
+      <span v-if="!selectOptions.length">
+        When autocomplete options are avaialable, use up and down arrows to review and enter to select.
+      </span>
+      <span v-else>
+        {{ selectOptions.length }} options available. Use ip and down arrrows to review and enter to select.
+      </span>
+    </div>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+.select {
+  position: relative;
+  // width: 100%;
+  // border: 1px solid red;
+
+  .filter {
+    // border: 1px solid red;
+    // .input-icons {
+    //   display: flex;
+    //   border: 1px solid var(--color-medium);
+    // border: 1px solid green;
+
+    // .inner {
+    //   flex: 1;
+    //   display: flex;
+    // border: 3px solid blue;
+
+    input {
+      width: 100%;
+      // flex: 1;
+      border: none;
+      padding-block: var(--space-xxs);
+      padding-inline: var(--size-s);
+      border: 1px solid var(--color-medium);
+      border-radius: var(--size-2xs);
+      // border: 1px solid blue;
+    }
+
+    button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(15%);
+      right: var(--size-2xs);
+      border: none;
+
+      &:hover,
+      &:focus {
+        outline: none;
+        // cursor: text;
+      }
+      // border: 1px solid green;
+    }
+    // }
+
+    // button {
+    //   // display: block;
+    //   width: var(--size-2xl);
+    //   border: none;
+
+    //   padding: var(--space-xxs);
+    //   cursor: pointer;
+
+    //   svg {
+    //     height: 100%;
+    //     width: 100%;
+    //   }
+
+    //   &.search {
+    //     color: var(--color-white);
+    //     background-color: var(--color-light);
+    //     width: var(--size-2xl);
+
+    //     svg {
+    //       height: 100%;
+    //       width: 100%;
+    //     }
+    //   }
+    // }
+  }
+  // }
+
+  .toggle {
+    cursor: pointer;
+  }
+
+  ul {
+    width: 105%;
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-3);
+    background-color: var(--color-white);
+    border-radius: var(--size-4xs);
+    z-index: 99999;
+    // max-height: var(--size-7xl);
+    overflow: auto;
+    position: absolute;
+    top: calc(100% + var(--size-xs));
+    display: flex;
+    flex-direction: column;
+    margin-inline-start: calc(-1 * var(--space-xxs));
+    padding-inline: var(--size-xs);
+    padding-block-end: var(--size-s);
+
+    // &.above {
+    //   top: calc(-1 * var(--size-7xl) - var(--size-xs));
+    // }
+
+    li {
+      padding-block: var(--size-2s);
+      padding-inline: var(--size-xs);
+      cursor: pointer;
+
+      label {
+        display: flex;
+        gap: var(--size-xs);
+        cursor: pointer;
+      }
+
+      &:hover,
+      &.active {
+        background-color: var(--color-primary);
+      }
+
+      // &.active {
+      //   background-color: var(--color-primary);
+      // }
+    }
+  }
+
+  &.no-label {
+    .filter {
+      button {
+        transform: translateY(-50%);
+      }
+    }
+  }
+}
+</style>

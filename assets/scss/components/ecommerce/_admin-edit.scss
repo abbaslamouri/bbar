@@ -1,0 +1,119 @@
+.ecommerce.admin.edit {
+  flex: 1;
+  // border: 1px solid red;
+
+  // .heading {
+  //   display: flex;
+  //   justify-content: space-between;
+  // }
+  h1 {
+    font-size: var(--font-size-1);
+  }
+
+  h2 {
+    font-size: var(--font-size-0);
+    border-block-end: 2px solid var(--on-bg);
+    // width: min-content;
+    text-transform: uppercase;
+    font-weight: var(--font-bold);
+    display: inline-block;
+  }
+
+  form {
+    .form-inner {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--size-l);
+
+      .left {
+        width: var(--size-9xl);
+        background-color: var(--card-bg);
+        box-shadow: var(--shadow-all-1);
+        padding: var(--size-l);
+        position: sticky;
+        top: var(--size-6xl);
+        z-index: 1;
+
+        ul {
+          // border: 1px solid red;
+          display: flex;
+          flex-direction: column;
+
+          li {
+            // border: 1px solid red;
+            a {
+              display: inline-block;
+              min-width: 100%;
+              // border: 1px solid red;
+              padding: var(--space-xxs);
+
+              &:hover {
+                background-color: var(--bg-featured);
+              }
+            }
+          }
+        }
+        // border: 1px solid red;
+      }
+
+      .middle {
+        // padding: var(--size-l);
+        flex: 1;
+
+        .section {
+          background-color: var(--card-bg);
+          padding: var(--size-l);
+          box-shadow: var(--shadow-all-1);
+          .columns-2 {
+            display: flex;
+            gap: var(--size-l);
+
+            & > * {
+              flex: 1;
+            }
+          }
+        }
+        // z-index: -1;
+      }
+
+      .right {
+        // z-index: -1;
+        width: var(--size-9xl);
+        background-color: var(--card-bg);
+        box-shadow: var(--shadow-all-1);
+        padding: var(--size-l);
+        position: sticky;
+        top: var(--size-6xl);
+      }
+    }
+  }
+
+  &.break-point-1 {
+    .left {
+      // top: var(--size-7xl);
+    }
+
+    .right {
+      // top: var(--size-7xl);
+    }
+  }
+
+  &.break-point-2 {
+    .form-inner {
+      flex-direction: column;
+      align-items: initial;
+    }
+
+    .left {
+      position: static;
+      // align-items: stretch;
+      min-width: 100%;
+      ul {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--size-l);
+      }
+    }
+  }
+}

@@ -1,0 +1,357 @@
+// @use 'sass:math';
+
+// ******** TYPE *********
+$type-scales: (
+  minor-second: 1.067,
+  major-second: 1.125,
+  minor-third: 1.2,
+  major-third: 1.25,
+  perfect-fourth: 1.333,
+  augmented-fourth: 1.414,
+  perfect-fifth: 1.5,
+  golden-ratio: 1.618,
+  major-sixth: 1.667,
+  minor-seventh: 1.778,
+  major-seventh: 1.875,
+  octave: 2,
+);
+
+$font-base-size: 1rem;
+$font-min-size: 14;
+$font-max-size: 18;
+
+$type-scale-sm: map-get(
+  $map: $type-scales,
+  $key: minor-third,
+);
+
+$type-scale-lg: map-get(
+  $map: $type-scales,
+  $key: augmented-fourth,
+);
+
+// ******** BREAKPOINTS *********
+
+$small-screen-breakpoint: 40rem;
+$promo-breakpoint: 64rem;
+$breakpoint-64: 64rem;
+$breakpoint-36: 36rem;
+// $breakpoint-30: 30rem;
+
+$font-sizes: (-3, -2, -1, 0, 1, 2, 3, 4, 5, 6);
+$font-weights: (
+  thin: 300,
+  normal: 400,
+  semibold: 500,
+  bold: 600,
+  extrabold: 700,
+);
+
+$tracking: (
+  '-6': -0.075ch,
+  '-5': -0.05ch,
+  '-4': -0.04ch,
+  '-3': -0.033ch,
+  '-2': -0.02ch,
+  '-1': -0.01ch,
+  '0': 0,
+  '1': 0.05ch,
+  '2': 0.075ch,
+  '3': 0.1ch,
+  '4': 0.15ch,
+  '5': 0.2ch,
+  '6': 0.25ch,
+  '7': 0.3ch,
+  '8': 0.4ch,
+  '9': 0.5ch,
+);
+
+// ******** SPACING *********
+$size-base-steps: (
+  5xs: (
+    min: 0.075,
+    max: 0.075,
+  ),
+  4xs: (
+    min: 0.1,
+    max: 0.1,
+  ),
+  3xs: (
+    min: 0.125,
+    max: 0.125,
+  ),
+  2xs: (
+    min: 0.25,
+    max: 0.25,
+  ),
+  xs: (
+    min: 0.5,
+    max: 0.5,
+  ),
+  s: (
+    min: 0.75,
+    max: 0.75,
+  ),
+  m: (
+    min: 1,
+    max: 1,
+  ),
+  l: (
+    min: 1.25,
+    max: 1.25,
+  ),
+  xl: (
+    min: 1.5,
+    max: 1.5,
+  ),
+  2xl: (
+    min: 1.75,
+    max: 1.75,
+  ),
+  3xl: (
+    min: 2,
+    max: 2,
+  ),
+  4xl: (
+    min: 3,
+    max: 3,
+  ),
+  5xl: (
+    min: 4,
+    max: 4,
+  ),
+  6xl: (
+    min: 5,
+    max: 5,
+  ),
+  7xl: (
+    min: 6,
+    max: 6,
+  ),
+  8xl: (
+    min: 8,
+    max: 8,
+  ),
+  9xl: (
+    min: 10,
+    max: 10,
+  ),
+  10xl: (
+    min: 12,
+    max: 12,
+  ),
+  11xl: (
+    min: 16,
+    max: 16,
+  ),
+  12xl: (
+    min: 20,
+    max: 20,
+  ),
+  13xl: (
+    min: 24,
+    max: 24,
+  ),
+  14xl: (
+    min: 30,
+    max: 30,
+  ),
+  15xl: (
+    min: 36,
+    max: 36,
+  ),
+);
+
+$size-extended-steps: (
+  'xs-s': (
+    min: 0.5,
+    max: 0.75,
+  ),
+  'xs-m': (
+    min: 0.5,
+    max: 1,
+  ),
+  'xs-l': (
+    min: 0.5,
+    max: 1.25,
+  ),
+  'xs-xl': (
+    min: 0.5,
+    max: 1.5,
+  ),
+  's-m': (
+    min: 0.75,
+    max: 1,
+  ),
+  's-l': (
+    min: 0.75,
+    max: 1.25,
+  ),
+  's-xl': (
+    min: 0.25,
+    max: 1.5,
+  ),
+  'm-l': (
+    min: 1,
+    max: 1.25,
+  ),
+  'm-xl': (
+    min: 1,
+    max: 1.5,
+  ),
+  'm-2xl': (
+    min: 1,
+    max: 1.75,
+  ),
+  'm-3xl': (
+    min: 1,
+    max: 2,
+  ),
+  '6xl-7xl': (
+    min: 6,
+    max: 8,
+  ),
+);
+
+// ******** SIZING *********
+// $size-steps: (
+//   1: '1rem',
+//   2: '1.25rem',
+//   3: '1.5rem',
+//   4: '1.75rem',
+//   5: '2rem',
+//   6: '2.25rem',
+//   7: '2.5rem',
+//   8: '2.75rem',
+//   9: '4rem',
+//   10: '6rem',
+//   11: '8rem',
+//   12: '10rem',
+//   13: '12rem',
+//   14: '16rem',
+//   15: '18rem',
+//   16: '24rem',
+//   17: '36rem',
+//   18: '48rem',
+//   19: '56rem',
+//   20: '64rem',
+//   21: '72rem',
+//   22: '80rem',
+//   23: '84rem',
+//   24: '96rem',
+// );
+
+// ******** VIEWPORT *********
+$fluid-min-width: 320;
+$fluid-max-width: 1920;
+
+// ******** COLORS *********
+$colorsHues: (
+  primary: 47,
+  danger: 2,
+  warning: 32,
+  success: 115,
+  info: 209,
+);
+
+$colorsSL: (
+  10: (
+    s: 100,
+    l: 13,
+  ),
+  20: (
+    s: 96,
+    l: 19,
+  ),
+  30: (
+    s: 92,
+    l: 28,
+  ),
+  40: (
+    s: 82,
+    l: 38,
+  ),
+  50: (
+    s: 72,
+    l: 54,
+  ),
+  60: (
+    s: 88,
+    l: 67,
+  ),
+  70: (
+    s: 89,
+    l: 78,
+  ),
+  80: (
+    s: 90,
+    l: 88,
+  ),
+  90: (
+    s: 100,
+    l: 97,
+  ),
+  95: (
+    s: 100,
+    l: 99,
+  ),
+);
+
+$neutralsHues: (
+  neutral:
+    map-get(
+      $map: $colorsHues,
+      $key: primary,
+    ),
+);
+
+$neutralSL: (
+  '05': (
+    s: 20,
+    l: 5,
+  ),
+  10: (
+    s: 15,
+    l: 10,
+  ),
+  20: (
+    s: 12,
+    l: 20,
+  ),
+  30: (
+    s: 10,
+    l: 30,
+  ),
+  40: (
+    s: 8,
+    l: 40,
+  ),
+  50: (
+    s: 6,
+    l: 50,
+  ),
+  60: (
+    s: 4,
+    l: 60,
+  ),
+  70: (
+    s: 3,
+    l: 70,
+  ),
+  80: (
+    s: 2,
+    l: 80,
+  ),
+  90: (
+    s: 2,
+    l: 90,
+  ),
+  95: (
+    s: 2,
+    l: 95,
+  ),
+  99: (
+    s: 1,
+    l: 99,
+  ),
+);
