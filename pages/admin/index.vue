@@ -11,47 +11,68 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
+import { string } from 'zod'
 
 // const relevantSheet = 'ge-8000-12000.csv'
 // const relevantSheet = 'test.csv'
 
 const colors = ['#d70c52', '#690690', '#096096', '#346121']
 
-const datasets = ref([])
 const originalDatasets = ref([])
-// const chartData = ref()
+//  ref<{ label: string; data: { x: string | number; y: number }[] }[]>([])
+const datasets = ref([])
+//  ref<{ label: string; data: { x: string | number; y: number }[] }[]>([])
+const tableData = ref({})
 const rangeMin = ref()
 const rangeMax = ref()
+const range = ref([2, 20])
 
-// onMounted(async () => {
-const { data: csvData } = await useAsyncData('test', () => queryContent('x').find())
+const dataSize = 9000
 
-const parsedData = {} as Array<{}>
-
-for (const el of Object.keys(csvData.value?.[0]?.body[0])) {
-  // console.log(el)
-  parsedData[el] = []
-  // row[el] = item[el]
+const getAverage = (nums) => {
+  if (!nums.length) return
+  return nums.reduce((a, b) => a + b) / nums.length
 }
-// console.log('P1111111111', parsedData)
-// }
 
-rangeMin.value = 2000
-rangeMax.value = 20000
+const setTableData = () => {
+  const rowData = []
+  for (const prop in datasets.value) {
+    rowData[prop] = datasets.value[prop].data.map((d) => d.y)
+    tableData.value[prop] = {
+      label: datasets.value[prop].label,
+      min: Math.min(...rowData[prop]),
+      avg: getAverage([...rowData[prop]]),
+      max: Math.max(...rowData[prop]),
+    }
+  }
 
-for (const item of csvData.value?.[0]?.body) {
-  // console.log(item)
-  //   const row = {}
+  console.log('DDDD', rowData)
+}
 
-  const keys = Object.keys(item)
-  const values = Object.values(item)
-  console.log('KKKKK', values)
+const { data: csvData } = await useAsyncData('newdata', () => queryContent('newdata').find())
 
+const rawData = csvData.value?.[0]?.body
+console.log('Raw', rawData)
+
+const ratio = Math.ceil(rawData.length / dataSize)
+console.log(ratio)
+
+const modifiedData = [...rawData.filter((value: object, index: number) => index % ratio == 0)]
+
+console.log('Modified Raw', modifiedData)
+
+const parsedData = {} as { [key: string]: { x: number; y: number }[] }
+
+for (const prop of Object.keys(modifiedData[0])) {
+  if (prop !== 'WAVELENGTH') parsedData[prop] = []
+}
+console.log('P', parsedData)
+
+for (const item of modifiedData) {
+  const keys = Object.keys(item) as string[]
+  const values = Object.values(item) as number[]
   for (const prop in keys) {
-    // rangeMin.value = rangeMin.value < values[0] ? values[0] : rangeMin.value
-    // rangeMax.value = rangeMax.value < values[0] ? values[0] : rangeMax.value
     if (keys[prop] !== 'WAVELENGTH') {
-      // console.log('P2', parsedData[keys[prop]])
       parsedData[keys[prop]].push({
         x: values[0],
         y: +values[prop],
@@ -59,6 +80,7 @@ for (const item of csvData.value?.[0]?.body) {
     }
   }
 }
+console.log('PARSEDDATA', parsedData)
 
 // console.log('RM', rangeMin.value, rangeMax.value)
 
@@ -69,16 +91,38 @@ for (const item of csvData.value?.[0]?.body) {
 
 const parsedDataKeys = Object.keys(parsedData)
 const parsedDataValues = Object.values(parsedData)
-
 for (const prop in parsedDataKeys) {
-  if (parsedDataKeys[prop] !== 'WAVELENGTH') {
-    originalDatasets.value.push({ data: parsedDataValues[prop] })
-  }
+  originalDatasets.value.push({
+    label: parsedDataKeys[prop],
+    data: [...parsedDataValues[prop]],
+    borderColor: colors[prop],
+    pointStyle: false,
+  })
+}
+datasets.value = [...originalDatasets.value]
+
+// // const SimplifiedDataSets = []
+// for (const prop in datasets.value) {
+//   // const datalength = console.log('LENGTH', csvData.value?.[0]?.body.length)
+//   // console.log('LENGTH', csvData.value?.[0]?.body.length)
+//   // const data = [...datasets.value[prop].data]
+//   // datasets.value[prop].data = [...data.filter((value, index, Arr) => index % 9 == 0)]
+// }
+
+// datasets.value = SimplifiedDataSets
+console.log('DataSets', datasets.value)
+
+// Find xaxis min and max
+const rowData = []
+for (const prop in datasets.value) {
+  rowData[prop] = datasets.value[prop].data.map((d) => +d.x)
+  range.value[0] = Math.min(...rowData[prop])
+  range.value[1] = Math.max(...rowData[prop])
 }
 
-console.log('SETS', originalDatasets.value)
+console.log(rowData)
+setTableData()
 
-datasets.value = [...originalDatasets.value]
 // chartData.value = datasets.value
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
@@ -109,42 +153,29 @@ const chartOptions = computed(() => {
   }
 })
 
-const updateRange = debounce((inputValue: string, type: string) => {
-  if (type === 'rangeMin') rangeMin.value = +inputValue
-  if (type === 'rangeMax') rangeMax.value = +inputValue
-  console.log(rangeMin.value, rangeMax.value, rangeMin.value > rangeMax.value)
-  if (rangeMin.value >= rangeMax.value) return
+const updateDatasets = debounce(() => {
+  // if (type === 'rangeMin') rangeMin.value = +inputValue
+  // if (type === 'rangeMax') rangeMax.value = +inputValue
+  console.log(range.value[0], range.value[1], range.value[0] > range.value[1])
+  if (range.value[0] >= range.value[1]) return
   console.log(datasets.value)
   // return
   // const newDataSets = []
   const newDatasets = []
   for (const prop in originalDatasets.value) {
     newDatasets.push({
+      label: originalDatasets.value[prop].label,
       data: [
-        ...originalDatasets.value[prop].data.filter((item) => +item.x >= rangeMin.value && item.x <= rangeMax.value),
+        ...originalDatasets.value[prop].data.filter((item) => +item.x >= range.value[0] && item.x <= range.value[1]),
       ],
     })
-
-    // const newArr = []
-    // for (const prop in datasetData.data) {
-    //   dataSet
-    //   console.log(1 * item.x > 1 * inputValue.target.value)
-    //   if (type === 'rangeMin' && 1 * item.x >= 1 * inputValue.target.value) {
-    //     newArr.push(item)
-    //   }
-
-    //   if (type === 'rangeMax' && 1 * item.x <= 1 * inputValue.target.value) {
-    //     newArr.push(item)
-    //   }
-    // }
-    // newDataSets.push({ data: newArr })
   }
 
   datasets.value = newDatasets
-
   console.log(datasets.value)
   // searchText.value = inputValue
   // fetchMedia()
+  setTableData()
 }, 500)
 
 // watch(
@@ -163,15 +194,105 @@ const updateRange = debounce((inputValue: string, type: string) => {
 //   },
 //   { deep: true }
 // )
+
+// range[0] = $event"
+
+const handleMinRangeChange = (event) => {
+  console.log(event.target.value)
+  range.value[0] = event.target.value
+  // updateDatasets()
+}
+
+const handleMaxRangeChange = (event) => {
+  console.log(event.target.value)
+  range.value[1] = event.target.value
+  // updateDatasets()
+}
+
+watch(
+  range,
+  () => {
+    updateDatasets()
+  },
+  { deep: true }
+)
 </script>
 
 <template>
   <div>
-    <div class="chart-wrapper">
-      <Line id="my-chart-id" :data="chartData" :options="chartOptions" />
-    </div>
+    <v-container>
+      {{ tableData }}
+      <v-row>
+        <v-col>
+          <div class="chart-wrapper">
+            <Line id="my-chart-id" :data="chartData" :options="chartOptions" />
+          </div>
+          <v-range-slider
+            v-model="range"
+            color="primary"
+            hide-details
+            :max="20"
+            :min="2"
+            :step="0.1"
+            class="align-center"
+          >
+            <template v-slot:prepend>
+              <v-text-field
+                :model-value="range[0]"
+                hide-details
+                single-line
+                type="number"
+                variant="outlined"
+                density="compact"
+                style="width: 100px"
+                :max="20"
+                :min="2"
+                :step="0.1"
+                @change="handleMinRangeChange"
+              ></v-text-field>
+            </template>
+            <template v-slot:append>
+              <v-text-field
+                :model-value="range[1]"
+                hide-details
+                single-line
+                type="number"
+                variant="outlined"
+                style="width: 100px"
+                :max="20"
+                :min="2"
+                :step="0.1"
+                density="compact"
+                @change="handleMaxRangeChange"
+              ></v-text-field>
+            </template>
+          </v-range-slider>
+        </v-col>
+        <v-col>
+          <v-table fixed-header height="300px">
+            <thead>
+              <tr>
+                <th class="text-left">label</th>
+                <th class="text-left">Minimum</th>
+                <th class="text-center">Average</th>
+                <th class="text-left">Maximum</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, i) in tableData" :key="i">
+                <td>{{ item.label }}</td>
+                <td>{{ Math.round(item.min * 100) / 100 }}</td>
+                <td>{{ Math.round(item.avg * 100) / 100 }}</td>
+                <td>{{ Math.round(item.max * 100) / 100 }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-col>
+      </v-row>
+    </v-container>
 
-    <label for=""
+    <!-- </template> -->
+    <!-- <label for=""
       >Range Min
       <input
         type="range"
@@ -180,7 +301,7 @@ const updateRange = debounce((inputValue: string, type: string) => {
         class="slider"
         id="myRange"
         v-model="rangeMin"
-        @input="updateRange($event.target.value, 'rangeMin')"
+        @input="updateDatasets($event.target.value, 'rangeMin')"
       />
       <p>Min{{ rangeMin }}</p>
     </label>
@@ -194,11 +315,10 @@ const updateRange = debounce((inputValue: string, type: string) => {
         class="slider"
         id="myRange"
         v-model="rangeMax"
-        @input="updateRange($event.target.value, 'rangeMax')"
+        @input="updateDatasets($event.target.value, 'rangeMax')"
       />
       <p>Max{{ rangeMax }}</p>
-    </label>
-    {{ datasets[0] }}
+    </label> -->
 
     <!-- <LineChart ref="line" /> -->
   </div>
