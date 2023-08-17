@@ -18,6 +18,8 @@ import {
 const colors = ['#d70c52', '#690690', '#096096', '#346121']
 
 const datasets = ref([])
+const originalDatasets = ref([])
+// const chartData = ref()
 const rangeMin = ref()
 const rangeMax = ref()
 
@@ -58,7 +60,7 @@ for (const item of csvData.value?.[0]?.body) {
   }
 }
 
-console.log('RM', rangeMin.value, rangeMax.value)
+// console.log('RM', rangeMin.value, rangeMax.value)
 
 // console.log('P', parsedData)
 
@@ -70,11 +72,14 @@ const parsedDataValues = Object.values(parsedData)
 
 for (const prop in parsedDataKeys) {
   if (parsedDataKeys[prop] !== 'WAVELENGTH') {
-    datasets.value.push({ data: parsedDataValues[prop] })
+    originalDatasets.value.push({ data: parsedDataValues[prop] })
   }
 }
 
-console.log('SETS', datasets.value)
+console.log('SETS', originalDatasets.value)
+
+datasets.value = [...originalDatasets.value]
+// chartData.value = datasets.value
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
@@ -105,32 +110,59 @@ const chartOptions = computed(() => {
 })
 
 const updateRange = debounce((inputValue: string, type: string) => {
-  console.log(inputValue.target.value)
+  if (type === 'rangeMin') rangeMin.value = +inputValue
+  if (type === 'rangeMax') rangeMax.value = +inputValue
+  console.log(rangeMin.value, rangeMax.value, rangeMin.value > rangeMax.value)
+  if (rangeMin.value >= rangeMax.value) return
+  console.log(datasets.value)
+  // return
+  // const newDataSets = []
+  const newDatasets = []
+  for (const prop in originalDatasets.value) {
+    newDatasets.push({
+      data: [
+        ...originalDatasets.value[prop].data.filter((item) => +item.x >= rangeMin.value && item.x <= rangeMax.value),
+      ],
+    })
 
-  console.log(datasets)
-  const newDataSets = []
+    // const newArr = []
+    // for (const prop in datasetData.data) {
+    //   dataSet
+    //   console.log(1 * item.x > 1 * inputValue.target.value)
+    //   if (type === 'rangeMin' && 1 * item.x >= 1 * inputValue.target.value) {
+    //     newArr.push(item)
+    //   }
 
-  for (const datasetData of datasets.value) {
-    const newArr = []
-    for (const item of datasetData.data) {
-      console.log(1 * item.x > 1 * inputValue.target.value)
-      if (type === 'rangeMin' && 1 * item.x >= 1 * inputValue.target.value) {
-        newArr.push(item)
-      }
-
-      if (type === 'rangeMax' && 1 * item.x <= 1 * inputValue.target.value) {
-        newArr.push(item)
-      }
-    }
-    newDataSets.push({ data: newArr })
+    //   if (type === 'rangeMax' && 1 * item.x <= 1 * inputValue.target.value) {
+    //     newArr.push(item)
+    //   }
+    // }
+    // newDataSets.push({ data: newArr })
   }
 
-  datasets.value = newDataSets
+  datasets.value = newDatasets
 
   console.log(datasets.value)
   // searchText.value = inputValue
   // fetchMedia()
 }, 500)
+
+// watch(
+//   () => datasets.value,
+//   (newVal, oldValue) => {
+//     // if (newVal) cartModalRef.value.showModal()
+//     // else cartModalRef.value.close()
+//     // console.log(cartModalRef.value.getAttribute('open'))
+//     // setTimeout(() => {
+//     //   if (newVal) cartModalRef.value.showModal()
+//     // }, 5000)
+//     console.log(newVal)
+//     // console.log(oldValue)
+
+//     // else cartModalRef.value.close()
+//   },
+//   { deep: true }
+// )
 </script>
 
 <template>
@@ -148,7 +180,7 @@ const updateRange = debounce((inputValue: string, type: string) => {
         class="slider"
         id="myRange"
         v-model="rangeMin"
-        @input="updateRange($event, 'rangeMin')"
+        @input="updateRange($event.target.value, 'rangeMin')"
       />
       <p>Min{{ rangeMin }}</p>
     </label>
@@ -162,10 +194,11 @@ const updateRange = debounce((inputValue: string, type: string) => {
         class="slider"
         id="myRange"
         v-model="rangeMax"
-        @input="updateRange($event, 'rangeMax')"
+        @input="updateRange($event.target.value, 'rangeMax')"
       />
       <p>Max{{ rangeMax }}</p>
     </label>
+    {{ datasets[0] }}
 
     <!-- <LineChart ref="line" /> -->
   </div>
@@ -174,6 +207,6 @@ const updateRange = debounce((inputValue: string, type: string) => {
 <style scoped>
 .chart-wrapper {
   width: 600px;
-  height: 400px;
+  height: 200px;
 }
 </style>
