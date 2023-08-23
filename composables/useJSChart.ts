@@ -2,7 +2,7 @@
 import debounce from 'lodash.debounce'
 import { ISelectOption } from '~/server/utils/schemas/app'
 
-export const useHttp = () => {
+export const useJSChart = () => {
   const { authUser } = useAuthStore()
   const { appApiErrorMsgs } = useAppErrors()
 
@@ -19,12 +19,12 @@ export const useHttp = () => {
   const selectedItems = useState<object[]>('selectedItems', () => [])
   const selectedItemsIds = useState<string[]>('selectedItemsIds', () => [])
 
-  const getDataAverage = async (data: number[]) => {
+  const getDataAverage = (data: number[]) => {
     if (!data.length) return
     return data.reduce((a, b) => a + b) / data.length
   }
 
-  const setTableData = (datasets) => {
+  const setTableData = (datasets: any) => {
     const rowData = []
     const tableData = []
     for (const prop in datasets) {
@@ -36,15 +36,80 @@ export const useHttp = () => {
         dataMax: Math.max(...rowData[prop]),
       }
     }
-
-    // console.log('DDDD', rowData)
+    console.log(tableData)
+    return tableData
   }
 
-  const updateSortField = (event: string, selecteOptions: Array<ISelectOption>) => {
-    if (!event) return
-    const selectedValue = selecteOptions.find((option: ISelectOption) => option.text === event)
-    sort.value.field = selectedValue?.value ?? ''
+  const interpolateData = (data: any) => {
+    const ratio = 1
+    // console.log('LENGTH', rawData.length)
+    // console.log('RATIO', ratio)
+    return [...data.filter((value: object, index: number) => index % ratio == 0)]
   }
+
+  const parseData = (data: any) => {
+    const parsedData = {} as { [key: string]: { x: number; y: number }[] }
+
+    for (const prop of Object.keys(data[0])) {
+      if (prop !== 'WAVELENGTH') parsedData[prop] = []
+    }
+    // console.log('P', parsedData)
+
+    for (const item of data) {
+      const keys = Object.keys(item) as string[]
+      const values = Object.values(item) as number[]
+      for (const prop in keys) {
+        if (keys[prop] !== 'WAVELENGTH') {
+          parsedData[keys[prop]].push({
+            x: values[0],
+            y: +values[prop],
+          })
+        }
+      }
+    }
+
+    return parsedData
+  }
+
+  const setChartData = (parsedData: any, colors) => {
+    const originalDatasets = []
+    const parsedDataKeys = Object.keys(parsedData)
+    const parsedDataValues = Object.values(parsedData)
+    for (const prop in parsedDataKeys) {
+      originalDatasets.push({
+        label: parsedDataKeys[prop],
+        data: [...parsedDataValues[prop]],
+        borderColor: colors[prop],
+        pointStyle: false,
+      })
+    }
+    return originalDatasets
+    // datasets.value = [...originalDatasets]
+  }
+
+  // const updateDatasets = debounce((data: any, range: any) => {
+  //   // if (type === 'rangeMin') rangeMin.value = +inputValue
+  //   // if (type === 'rangeMax') rangeMax.value = +inputValue
+  //   console.log(range[0], range[1], range[0] > range[1])
+  //   if (range[0] >= range[1]) return
+  //   // console.log(datasets.value)
+  //   // return
+  //   // const newDataSets = []
+  //   const newDatasets = []
+  //   for (const prop in data) {
+  //     newDatasets.push({
+  //       label: data[prop].label,
+  //       data: [...data[prop].data.filter((item) => +item.x >= range[0] && item.x <= range[1])],
+  //     })
+  //   }
+
+  //   return newDatasets
+  //   // datasets.value = newDatasets
+  //   // console.log(datasets.value)
+  //   // searchText.value = inputValue
+  //   // fetchMedia()
+  //   // setTableData()
+  // }, 1000)
 
   // const updateFilterField = (event: string, selecteOptions: Array<ISelectOption>) => {
   //   console.log(event)
@@ -104,9 +169,12 @@ export const useHttp = () => {
     // appFetch,
     updateSearchText,
     updatePerPage,
-    updateSortField,
     updateSelectedItems,
+    parseData,
     setTableData,
+    interpolateData,
+    setChartData,
+    // updateDatasets
     // updateFilterField,
     // updateFilterAction,
     // updatePerpage,

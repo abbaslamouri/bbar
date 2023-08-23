@@ -77,6 +77,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/content',
     'nuxt-icon',
+    '@formkit/nuxt',
 
     async (options, nuxt) => {
       // @ts-ignore

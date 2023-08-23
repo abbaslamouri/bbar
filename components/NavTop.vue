@@ -64,7 +64,7 @@ watch(
     <ul class="" role="list">
       <li>
         <button class="btn" aria-labelledby="button-label-search-products" @click="$emit('showSearchModal')">
-          {{ authUser }}
+          <!-- {{ authUser }} -->
           <Icon class="icon" name="mdi:magnify" aria-hidden="true" focusable="false" />
           <span class="label" aria-hidden="true">Search Products</span>
           <span id="button-label-search-products" hidden>Search Products</span>

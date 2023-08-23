@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import debounce from 'lodash.debounce'
+
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -12,9 +13,31 @@ import {
   Legend,
 } from 'chart.js'
 import { string } from 'zod'
+import { getNode } from '@formkit/core'
 
-// const relevantSheet = 'ge-8000-12000.csv'
-// const relevantSheet = 'test.csv'
+const route = useRoute()
+const { setTableData, interpolateData, parseData, setChartData } = useJSChart()
+
+const originalDatasets = ref([
+  {
+    label: 'loading',
+    data: [
+      { x: '2', y: 6 },
+      { x: '10', y: 10 },
+      { x: '15', y: 20 },
+    ],
+  },
+])
+const tableData = ref({})
+const rangeMin = ref()
+const rangeMax = ref()
+const range = ref([2, 20])
+const DataRange = ref([2, 20])
+const lineChartRef = ref({})
+
+// const dataSize = 2000
+
+const datasets = ref([])
 
 const colors = [
   '#5e4fa2',
@@ -31,96 +54,42 @@ const colors = [
   '#e6f598',
 ]
 
-const originalDatasets = ref([])
-//  ref<{ label: string; data: { x: string | number; y: number }[] }[]>([])
-const datasets = ref([])
-//  ref<{ label: string; data: { x: string | number; y: number }[] }[]>([])
-const tableData = ref({})
-const rangeMin = ref()
-const rangeMax = ref()
-const range = ref([2, 20])
-const DataRange = ref([2, 20])
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
-const dataSize = 2000
-
-const getAverage = (nums) => {
-  if (!nums.length) return
-  return nums.reduce((a, b) => a + b) / nums.length
-}
-
-const setTableData = () => {
-  const rowData = []
-  for (const prop in datasets.value) {
-    rowData[prop] = datasets.value[prop].data.map((d) => d.y)
-    tableData.value[prop] = {
-      label: datasets.value[prop].label,
-      min: Math.min(...rowData[prop]),
-      avg: getAverage([...rowData[prop]]),
-      max: Math.max(...rowData[prop]),
-    }
+const chartData = computed(() => {
+  return {
+    datasets: datasets.value,
   }
-
-  // console.log('DDDD', rowData)
-}
-
-const route = useRoute()
-// console.log(route.params)
+})
+const chartOptions = computed(() => {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        gridLines: {
+          display: false,
+        },
+        ticks: {
+          maxTicksLimit: 10,
+        },
+        min: 2400,
+      },
+    },
+  }
+})
 
 const { data: csvData } = await useAsyncData(`${route.params.stack}`, () =>
   queryContent(`${route.params.stack}`).find()
 )
 
 const rawData = csvData.value?.[0]?.body
-// console.log('Raw', rawData)
-
-// const ratio = Math.ceil(rawData.length / dataSize)
-const ratio = 1
-console.log('LENGTH', rawData.length)
-console.log('RATIO', ratio)
-
-const modifiedData = [...rawData.filter((value: object, index: number) => index % ratio == 0)]
-
-// console.log('Modified Raw', modifiedData)
-
-const parsedData = {} as { [key: string]: { x: number; y: number }[] }
-
-for (const prop of Object.keys(modifiedData[0])) {
-  if (prop !== 'WAVELENGTH') parsedData[prop] = []
-}
-// console.log('P', parsedData)
-
-for (const item of modifiedData) {
-  const keys = Object.keys(item) as string[]
-  const values = Object.values(item) as number[]
-  for (const prop in keys) {
-    if (keys[prop] !== 'WAVELENGTH') {
-      parsedData[keys[prop]].push({
-        x: values[0],
-        y: +values[prop],
-      })
-    }
-  }
-}
+const modifiedData = interpolateData(rawData)
+const parsedData = parseData(modifiedData)
 // console.log('PARSEDDATA', parsedData)
 
-// console.log('RM', rangeMin.value, rangeMax.value)
-
-// console.log('P', parsedData)
-
-// const labels = parsedData.WAVELENGTH
-// let datasets = []
-
-const parsedDataKeys = Object.keys(parsedData)
-const parsedDataValues = Object.values(parsedData)
-for (const prop in parsedDataKeys) {
-  originalDatasets.value.push({
-    label: parsedDataKeys[prop],
-    data: [...parsedDataValues[prop]],
-    borderColor: colors[prop],
-    pointStyle: false,
-  })
-}
-datasets.value = [...originalDatasets.value]
+// originalDatasets.value = [...setChartData(parsedData, colors)]
+// datasets.value = [...setChartData(parsedData, colors)]
 
 // // const SimplifiedDataSets = []
 // for (const prop in datasets.value) {
@@ -145,62 +114,9 @@ for (const prop in datasets.value) {
 }
 
 // console.log(rowData)
-setTableData()
+tableData.value = setTableData(originalDatasets.value)
 
 // chartData.value = datasets.value
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
-
-const chartData = computed(() => {
-  return {
-    datasets: datasets.value,
-  }
-})
-const chartOptions = computed(() => {
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        gridLines: {
-          display: false,
-        },
-        ticks: {
-          // autoSkip: true,
-          maxTicksLimit: 10,
-          // display: false,
-          // position: 'right',
-        },
-        min: 2400,
-      },
-    },
-  }
-})
-
-const updateDatasets = debounce(() => {
-  // if (type === 'rangeMin') rangeMin.value = +inputValue
-  // if (type === 'rangeMax') rangeMax.value = +inputValue
-  console.log(range.value[0], range.value[1], range.value[0] > range.value[1])
-  if (range.value[0] >= range.value[1]) return
-  // console.log(datasets.value)
-  // return
-  // const newDataSets = []
-  const newDatasets = []
-  for (const prop in originalDatasets.value) {
-    newDatasets.push({
-      label: originalDatasets.value[prop].label,
-      data: [
-        ...originalDatasets.value[prop].data.filter((item) => +item.x >= range.value[0] && item.x <= range.value[1]),
-      ],
-    })
-  }
-
-  datasets.value = newDatasets
-  // console.log(datasets.value)
-  // searchText.value = inputValue
-  // fetchMedia()
-  setTableData()
-}, 500)
 
 // watch(
 //   () => datasets.value,
@@ -221,6 +137,34 @@ const updateDatasets = debounce(() => {
 
 // range[0] = $event"
 
+const updateDatasets = () => {
+  // if (type === 'rangeMin') rangeMin.value = +inputValue
+  // if (type === 'rangeMax') rangeMax.value = +inputValue
+  console.log(range.value[0], range.value[1], range.value[0] > range.value[1])
+  if (range.value[0] >= range.value[1]) return
+  // console.log(datasets.value)
+  // return
+  // const newDataSets = []
+  const newDatasets = []
+  for (const prop in originalDatasets.value) {
+    newDatasets.push({
+      label: originalDatasets.value[prop].label,
+      data: [
+        ...originalDatasets.value[prop].data.filter((item) => +item.x >= range.value[0] && item.x <= range.value[1]),
+      ],
+    })
+  }
+
+  // return newDatasets
+  datasets.value = newDatasets
+
+  tableData.value = setTableData(datasets.value)
+  // console.log(datasets.value)
+  // searchText.value = inputValue
+  // fetchMedia()
+  // setTableData()
+}
+
 const handleMinRangeChange = (event) => {
   console.log(event.target.value)
   range.value[0] = event.target.value
@@ -233,6 +177,12 @@ const handleMaxRangeChange = (event) => {
   // updateDatasets()
 }
 
+const handleInput = (event: Event) => {
+  const node = getNode('chartRange')
+  console.log(event, node?.value)
+  range.value = node?.value as number[]
+}
+
 watch(
   range,
   () => {
@@ -243,16 +193,42 @@ watch(
 </script>
 
 <template>
-  <div>
-    <v-container>
-      <!-- {{ tableData }} -->
-      <v-row>
-        <v-col>
-          <div class="chart-wrapper" v-if="chartData">
-            <Line id="my-chart-id" :data="chartData" :options="chartOptions" />
-          </div>
-          <div v-else>...loading</div>
-          <v-range-slider
+  <div class="chart">
+    {{ lineChartRef }}
+    <!-- <v-container> -->
+    <!-- {{ tableData }} -->
+    <!-- <v-row>
+        <v-col> -->
+    <div class="graph">
+      <div class="chart-wrapper" v-if="chartData">
+        <Line id="my-chart-id" :data="chartData" :options="chartOptions" ref="lineChartRef" />
+      </div>
+      <div v-else>...loading</div>
+      <div>
+        <FormKit type="form" #default="{ value }" actions="false">
+          <FormKit
+            type="slider"
+            name="chartRange"
+            id="chartRange"
+            :value="[DataRange[0], DataRange[1]]"
+            label="A slider with multiple inputs"
+            show-input
+            :min="DataRange[0]"
+            step=".1"
+            :max="DataRange[1]"
+            tooltip="true"
+            :min-input-attrs="{ label: 'Range min' }"
+            :max-input-attrs="{ label: 'Range max' }"
+            mark-labels
+            :delay="500"
+            @input="handleInput"
+          />
+          {{ value }}
+        </FormKit>
+      </div>
+    </div>
+
+    <!-- <v-range-slider
             v-model="range"
             color="primary"
             hide-details
@@ -291,30 +267,30 @@ watch(
                 @change="handleMaxRangeChange"
               ></v-text-field>
             </template>
-          </v-range-slider>
-        </v-col>
-        <v-col>
-          <v-table fixed-header height="300px">
-            <thead>
-              <tr>
-                <th class="text-left">label</th>
-                <th class="text-left">Minimum</th>
-                <th class="text-center">Average</th>
-                <th class="text-left">Maximum</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, i) in tableData" :key="i">
-                <td>{{ item.label }}</td>
-                <td>{{ Math.round(item.min * 100) / 100 }}</td>
-                <td>{{ Math.round(item.avg * 100) / 100 }}</td>
-                <td>{{ Math.round(item.max * 100) / 100 }}</td>
-              </tr>
-            </tbody>
-          </v-table>
-        </v-col>
+          </v-range-slider> -->
+    <!-- </v-col>
+        <v-col> -->
+    <v-table fixed-header height="300px">
+      <thead>
+        <tr>
+          <th class="text-left">label</th>
+          <th class="text-left">Minimum</th>
+          <th class="text-center">Average</th>
+          <th class="text-left">Maximum</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, i) in tableData" :key="i">
+          <td>{{ item.label }}</td>
+          <td>{{ Math.round(item.dataMin * 100) / 100 }}</td>
+          <td>{{ Math.round(item.dataAvg * 100) / 100 }}</td>
+          <td>{{ Math.round(item.dataMax * 100) / 100 }}</td>
+        </tr>
+      </tbody>
+    </v-table>
+    <!-- </v-col>
       </v-row>
-    </v-container>
+    </v-container> -->
 
     <!-- </template> -->
     <!-- <label for=""
@@ -350,8 +326,20 @@ watch(
 </template>
 
 <style scoped>
-.chart-wrapper {
-  width: 600px;
-  height: 200px;
+.chart {
+  flex: 1;
+  border: 1px solid red;
+
+  display: flex;
+  .graph {
+    flex: 1;
+    .chart-wrapper {
+      display: flex;
+      width: 100%;
+      width: 100%;
+      height: 200px;
+      border: 1px solid red;
+    }
+  }
 }
 </style>
