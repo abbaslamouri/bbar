@@ -78,11 +78,12 @@ export default defineNuxtConfig({
     '@nuxt/content',
     'nuxt-icon',
     '@formkit/nuxt',
+    '@sidebase/nuxt-pdf',
 
-    async (options, nuxt) => {
-      // @ts-ignore
-      nuxt.hooks.hook('vite:extendConfig', (config) => config.plugins.push(vuetify()))
-    },
+    // async (options, nuxt) => {
+    //   // @ts-ignore
+    //   nuxt.hooks.hook('vite:extendConfig', (config) => config.plugins.push(vuetify()))
+    // },
     // '@invictus.codes/nuxt-vuetify',
     // 'nuxt-csurf',
     // '@sidebase/nuxt-auth',

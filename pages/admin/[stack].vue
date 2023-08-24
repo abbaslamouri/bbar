@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import debounce from 'lodash.debounce'
-
+import { exportToPDF } from '#imports'
+import annotationPlugin from 'chartjs-plugin-annotation'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -54,7 +55,36 @@ const colors = [
   '#e6f598',
 ]
 
+const pdfSection = ref<HTMLElement | null>(null)
+
+// const plugin = {
+//   id: 'customCanvasBackgroundColor',
+//   beforeDraw: (chart, args, options) => {
+//     const { ctx } = chart
+//     ctx.save()
+//     ctx.globalCompositeOperation = 'destination-over'
+//     ctx.fillStyle = options.color || '#99ffff'
+//     ctx.fillRect(0, 0, chart.width, chart.height)
+//     ctx.restore()
+//   },
+// }
+const bgColor = {
+  id: 'bgColor',
+  beforDraw: (chart, options) => {
+    const { ctx, width, height } = chart
+    ctx.fillStyle = 'green'
+    ctx.fillRect(0, 0, width, height)
+    ctx.restore()
+  },
+}
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+
+// onMounted(() => {
+//   ChartJS.plugins.register(annotationPlugin)
+//   ChartJS.addPlugin(chartjsPluginAnnotation)
+//   ChartJS.renderChart(chartData.value, options.value)
+// })
 
 const chartData = computed(() => {
   return {
@@ -76,6 +106,27 @@ const chartOptions = computed(() => {
         min: 2400,
       },
     },
+    plugins: {
+      type: Array,
+      default: () => [bgColor],
+    },
+    // plugins: {
+    //   autocolors: false,
+    //   annotation: {
+    //     annotations: {
+    //       box1: {
+    //         drawTime: 'afterDraw',
+    //         // Indicates the type of annotation
+    //         type: 'box',
+    //         xMin: 2,
+    //         xMax: 7,
+    //         yMin: 0,
+    //         yMax: 100,
+    //         backgroundColor: 'rgba(0,0,0,1)',
+    //       },
+    //     },
+    //   },
+    // },
   }
 })
 
@@ -88,8 +139,8 @@ const modifiedData = interpolateData(rawData)
 const parsedData = parseData(modifiedData)
 // console.log('PARSEDDATA', parsedData)
 
-// originalDatasets.value = [...setChartData(parsedData, colors)]
-// datasets.value = [...setChartData(parsedData, colors)]
+originalDatasets.value = [...setChartData(parsedData, colors)]
+datasets.value = [...setChartData(parsedData, colors)]
 
 // // const SimplifiedDataSets = []
 // for (const prop in datasets.value) {
@@ -194,12 +245,13 @@ watch(
 
 <template>
   <div class="chart">
-    {{ lineChartRef }}
+    <!-- {{ lineChartRef }} -->
+
     <!-- <v-container> -->
     <!-- {{ tableData }} -->
     <!-- <v-row>
         <v-col> -->
-    <div class="graph">
+    <div class="graph" ref="pdfSection">
       <div class="chart-wrapper" v-if="chartData">
         <Line id="my-chart-id" :data="chartData" :options="chartOptions" ref="lineChartRef" />
       </div>
@@ -227,6 +279,8 @@ watch(
         </FormKit>
       </div>
     </div>
+
+    <button class="btn btn-filled" @click="exportToPDF('my-pdf-file.pdf', pdfSection)">print card</button>
 
     <!-- <v-range-slider
             v-model="range"
@@ -270,7 +324,7 @@ watch(
           </v-range-slider> -->
     <!-- </v-col>
         <v-col> -->
-    <v-table fixed-header height="300px">
+    <table fixed-header height="300px">
       <thead>
         <tr>
           <th class="text-left">label</th>
@@ -287,7 +341,7 @@ watch(
           <td>{{ Math.round(item.dataMax * 100) / 100 }}</td>
         </tr>
       </tbody>
-    </v-table>
+    </table>
     <!-- </v-col>
       </v-row>
     </v-container> -->
@@ -335,8 +389,9 @@ watch(
     flex: 1;
     .chart-wrapper {
       display: flex;
+
       width: 100%;
-      width: 100%;
+      padding: 2rem;
       height: 200px;
       border: 1px solid red;
     }
